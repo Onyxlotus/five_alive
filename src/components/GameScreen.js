@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import heart from './../images/heard.png';
-import skull from './../images/skull.webp';
+import React, { useState } from "react";
+import heart from "./../images/heard.png";
+import skull from "./../images/skull.webp";
 import { motion } from "framer-motion";
 
 export default function GameScreen({ onBack }) {
     function drawCard() {
-        return Math.floor(Math.random() * 10) + 1;
+        const specialCards = [0, -1]; // Reset и Skip
+        return Math.random() < 0.2 ? specialCards[Math.floor(Math.random() * specialCards.length)] : Math.floor(Math.random() * 10) + 1;
     }
 
     const [playerLives, setPlayerLives] = useState(5);
@@ -16,17 +17,29 @@ export default function GameScreen({ onBack }) {
     const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
     const [isBotTurn, setIsBotTurn] = useState(false);
+    const [lastBotCard, setLastBotCard] = useState(null);
 
     function playCard(card) {
+        if (gameOver) return;
+        
         setPlayerHand(([first, second]) => (first === card ? [second, drawCard()] : [first, drawCard()]));
+
+        if (card === 0) {
+            setCurrentSum(0);
+            setIsBotTurn(true);
+            setTimeout(() => botTurn(0), 1000);
+            return;
+        } else if (card === -1) {
+            setIsBotTurn(true);
+            setTimeout(() => botTurn(currentSum), 1000);
+            return;
+        }
 
         const newSum = currentSum + card;
         if (newSum > 21) {
-            setPlayerLives((prevLives) => {
-                const updatedLives = prevLives - 1;
-                checkGameOver(updatedLives, botLives);
-                return updatedLives;
-            });
+            const newPlayerLives = playerLives - 1;
+            checkGameOver(newPlayerLives, botLives);
+            setPlayerLives(newPlayerLives);
         } else {
             setCurrentSum(newSum);
             setIsBotTurn(true);
@@ -35,17 +48,33 @@ export default function GameScreen({ onBack }) {
     }
 
     function botTurn(sum) {
-        const botCard = botHand[0];
+        if (gameOver) return;
 
+        let botCard = botHand.find((card) => card + sum <= 21) || botHand[0];
+        if (botHand.includes(0) && sum > 15) {
+          botCard = 0;
+      } else if (botHand.includes(-1) && Math.random() < 0.5) {
+          botCard = -1;
+      }
+        
         setBotHand(([first, second]) => [second, drawCard()]);
+        setLastBotCard(botCard);
+
+        if (botCard === -1) {
+            setIsBotTurn(false);
+            return;
+        } else
+        if (botCard === 0) {
+          setCurrentSum(0);
+          setIsBotTurn(false);
+          return;
+      }
 
         const newSum = sum + botCard;
         if (newSum > 21) {
-            setBotLives((prevLives) => {
-                const updatedLives = prevLives - 1;
-                checkGameOver(playerLives, updatedLives);
-                return updatedLives;
-            });
+            const newBotLives = botLives - 1;
+            checkGameOver(playerLives, newBotLives);
+            setBotLives(newBotLives);
         } else {
             setCurrentSum(newSum);
         }
@@ -69,6 +98,7 @@ export default function GameScreen({ onBack }) {
         setCurrentSum(0);
         setPlayerHand([drawCard(), drawCard()]);
         setBotHand([drawCard(), drawCard()]);
+        setLastBotCard(null);
     }
 
     function restartGame() {
@@ -80,6 +110,7 @@ export default function GameScreen({ onBack }) {
         setGameOver(false);
         setWinner(null);
         setIsBotTurn(false);
+        setLastBotCard(null);
     }
 
     function renderLives(lives) {
@@ -119,6 +150,7 @@ export default function GameScreen({ onBack }) {
                     {renderLives(botLives)}
                 </div>
             </div>
+            {lastBotCard !== null && <p>Бот сыграл: {lastBotCard === 0 ? "RESET" : lastBotCard === -1 ? "SKIP" : lastBotCard}</p>}
             {gameOver ? (
                 <div className="game-over">
                     <h3>{winner === "Игрок" ? "Поздравляем, вы победили!" : "К сожалению, вы проиграли!"}</h3>
@@ -133,12 +165,12 @@ export default function GameScreen({ onBack }) {
                         playerHand.map((card, index) => (
                             <motion.button
                                 key={index}
-                                className="card-button"
+                                className={`card-button ${card === 0 ? "card-reset" : card === -1 ? "card-skip" : ""}`}
                                 onClick={() => playCard(card)}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
-                                {card}
+                                {card === 0 ? "RESET" : card === -1 ? "SKIP" : card}
                             </motion.button>
                         ))
                     )}
