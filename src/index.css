@@ -108,10 +108,56 @@ body {
 }
 
 .card-reset {
-  background-color: green;
+  background-image: linear-gradient(to right, red, green, orange);
   color: white;
 }
 .card-skip {
-  background-color: red;
+  background-image: linear-gradient(to right, red, green, orange);
   color: white;
+}
+
+.card-bomb {
+  background-image: linear-gradient(to right, red, green, orange);
+  color: white;
+}
+
+.card-one{
+  background-color: #ab1111;
+  color: white;
+}
+.card-two{
+  background-color: #ab5611;
+  color: white;
+}
+.card-three{
+  background-color: #ab9e11;
+  color: white;
+}
+.card-four{
+  background-color: #1bab11;
+  color: white;
+}
+.card-five{
+  background-color: #11ab5e;
+  color: white;
+}
+.card-six{
+  background-color: #1163ab;
+  color: white;
+}
+.card-seven{
+  background-color: #1911ab;
+  color: white;
+}
+.card-eight{
+  background-color: #5911ab;
+  color: white;
+}
+.card-nine{
+  background-color: #ab113a;
+  color: white;
+}
+.card-ten{
+background-color: #ab116b;
+color: white;
 }
