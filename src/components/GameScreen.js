@@ -6,13 +6,13 @@ import { motion } from "framer-motion";
 export default function GameScreen({ onBack }) {
     function drawCard() {
         const specialCards = [0, -1]; // Reset и Skip
-        return Math.random() < 0.2 ? specialCards[Math.floor(Math.random() * specialCards.length)] : Math.floor(Math.random() * 10) + 1;
+        return Math.random() < 0.1 ? specialCards[Math.floor(Math.random() * specialCards.length)] : Math.floor(Math.random() * 10) + 1;
     }
 
     const [playerLives, setPlayerLives] = useState(5);
     const [botLives, setBotLives] = useState(5);
-    const [playerHand, setPlayerHand] = useState([drawCard(), drawCard()]);
-    const [botHand, setBotHand] = useState([drawCard(), drawCard()]);
+    const [playerHand, setPlayerHand] = useState([drawCard(), drawCard(), drawCard(), drawCard(), drawCard()]);
+    const [botHand, setBotHand] = useState([drawCard(), drawCard(), drawCard(), drawCard(), drawCard()]);
     const [currentSum, setCurrentSum] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
@@ -21,8 +21,13 @@ export default function GameScreen({ onBack }) {
 
     function playCard(card) {
         if (gameOver) return;
-        
-        setPlayerHand(([first, second]) => (first === card ? [second, drawCard()] : [first, drawCard()]));
+
+        setPlayerHand((prevHand) => {
+          const newHand = [...prevHand];
+          const index = prevHand.indexOf(card);
+          if (index !== -1) newHand[index] = drawCard();
+          return newHand;
+        });
 
         if (card === 0) {
             setCurrentSum(0);
@@ -52,12 +57,18 @@ export default function GameScreen({ onBack }) {
 
         let botCard = botHand.find((card) => card + sum <= 21) || botHand[0];
         if (botHand.includes(0) && sum > 15) {
-          botCard = 0;
-      } else if (botHand.includes(-1) && Math.random() < 0.5) {
-          botCard = -1;
-      }
+            botCard = 0;
+        } else if (botHand.includes(-1) && Math.random() < 0.5) {
+           botCard = -1;
+        }
         
-        setBotHand(([first, second]) => [second, drawCard()]);
+
+        setBotHand((prevHand) => {
+          const newHand = [...prevHand];
+          const index = prevHand.indexOf(botCard);
+          if (index !== -1) newHand[index] = drawCard();
+          return newHand;
+        });
         setLastBotCard(botCard);
 
         if (botCard === -1) {
@@ -96,16 +107,16 @@ export default function GameScreen({ onBack }) {
 
     function resetRound() {
         setCurrentSum(0);
-        setPlayerHand([drawCard(), drawCard()]);
-        setBotHand([drawCard(), drawCard()]);
+        setPlayerHand([drawCard(), drawCard(), drawCard(), drawCard(), drawCard()]);
+        setBotHand([drawCard(), drawCard(), drawCard(), drawCard(), drawCard()]);
         setLastBotCard(null);
     }
 
     function restartGame() {
         setPlayerLives(5);
         setBotLives(5);
-        setPlayerHand([drawCard(), drawCard()]);
-        setBotHand([drawCard(), drawCard()]);
+        setPlayerHand([drawCard(), drawCard(), drawCard(), drawCard(), drawCard()]);
+        setBotHand([drawCard(), drawCard(), drawCard(), drawCard(), drawCard()]);
         setCurrentSum(0);
         setGameOver(false);
         setWinner(null);
